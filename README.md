@@ -2,7 +2,7 @@
 This is a network lab that emulates several routers
 
 ## Download
-https://www.dropbox.com/s/g13r1if3cf3euhl/netlab.img.gz?dl=0
+https://www.dropbox.com/s/g4ak2bc26g0tbfr/netlab.img.gz?dl=0
 
 ## Before running it
 
