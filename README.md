@@ -19,11 +19,21 @@ https://www.dropbox.com/s/g4ak2bc26g0tbfr/netlab.img.gz?dl=0
 ## Running it
 
 ### For MAC hosts
+#### Normal basic startup
+
+`sudo qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -net user,hostfwd=tcp:10.0.4.1:22-:22 -net nic`
+
+#### Advanced startup
 You will need some CPU parameter to run faster on MAC, like CPUID on and Accel HVF. MacOS may give low priority to `qemu` program as it is running from a terminal, to give more priority use `nice -20` in front.
 
 `sudo nice -20 qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -cpu host,vmware-cpuid-freq=on -accel hvf -net user,hostfwd=tcp:10.0.4.1:22-:22 -net nic`
+
+####
 
 ### For Windows hosts
 
 
 ### For Linux hosts
+#### Normal basic startup
+
+`sudo qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -net user,hostfwd=tcp:10.0.4.1:22-:22 -net nic`
