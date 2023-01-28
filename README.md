@@ -8,26 +8,26 @@ https://www.dropbox.com/s/g4ak2bc26g0tbfr/netlab.img.gz?dl=0
 
 ### Add IP to the loopback
 * On Mac you will need to add a loopback interface alias to 10.0.4.1 before running
-
-`sudo ifconfig lo0 alias 10.0.4.1`
-
+```
+sudo ifconfig lo0 alias 10.0.4.1
+```
 * On Linux you will need to use the following command
-
-`sudo ip addr add 10.0.4.1 dev lo`
-
+```
+sudo ip addr add 10.0.4.1 dev lo
+```
 
 ## Running it
 
 ### For MAC hosts
 #### Normal basic startup
-
-`sudo qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -net user,hostfwd=tcp:10.0.4.1:22-:22 -net nic`
-
+```
+sudo qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -net user,hostfwd=tcp:10.0.4.1:22-:22 -net nic
+```
 #### Advanced startup
 You will need some CPU parameter to run faster on MAC, like CPUID on and Accel HVF. MacOS may give low priority to `qemu` program as it is running from a terminal, to give more priority use `nice -20` in front.
-
-`sudo nice -20 qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -cpu host,vmware-cpuid-freq=on -accel hvf -net user,hostfwd=tcp:10.0.4.1:22-:22 -net nic`
-
+```
+sudo nice -20 qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -cpu host,vmware-cpuid-freq=on -accel hvf -net user,hostfwd=tcp:10.0.4.1:22-:22 -net nic
+```
 ####
 
 ### For Windows hosts
@@ -35,5 +35,6 @@ You will need some CPU parameter to run faster on MAC, like CPUID on and Accel H
 
 ### For Linux hosts
 #### Normal basic startup
-
-`sudo qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -net user,hostfwd=tcp:10.0.4.1:22-:22 -net nic`
+```
+sudo qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -net user,hostfwd=tcp:10.0.4.1:22-:22 -net nic
+```
