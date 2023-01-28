@@ -1,0 +1,77 @@
+devices:
+  - name: acc-a
+    type: router_acc
+  - name: acc-b
+    type: router_acc
+  - name: acc-c
+    type: router_acc
+  - name: border
+    type: router_border
+  - name: core-a1
+    type: router_core
+  - name: core-a2
+    type: router_core
+  - name: core-a3
+    type: router_core
+  - name: core-b1
+    type: router_core
+  - name: core-b2
+    type: router_core
+  - name: core-c1
+    type: router_core
+  - name: core-i1
+    type: router_core
+  - name: core-i2
+    type: router_core
+  - name: core-i3
+    type: router_core
+  - name: cpe-a
+    type: router_cpe
+  - name: cpe-b
+    type: router_cpe
+  - name: cpe-c
+    type: router_cpe
+  - name: internet
+    type: internet
+  - name: pc-a
+    type: pc
+  - name: pc-b
+    type: pc
+  - name: pc-c
+    type: pc
+
+links:
+  - name: [pc, cpe]
+    connection: [pc-a, cpe-a]
+  - name: [cpe, acc]
+    connection: [cpe-a, acc-a]
+  - name: [acc, core1]
+    connection: [acc-a, core-a1]
+  - name: [acc, core2]
+    connection: [acc-a, core-a2]
+  - name: [acc, core3]
+    connection: [acc-a, core-a3]
+  - name: [pc, cpe]
+    connection: [pc-b, cpe-b]
+  - name: [cpe, acc]
+    connection: [cpe-b, acc-b]
+  - name: [acc, core1]
+    connection: [acc-b, core-b1]
+  - name: [acc, core2]
+    connection: [acc-b, core-b2]
+  - name: [pc, cpe]
+    connection: [pc-c, cpe-c]
+  - name: [cpe, acc]
+    connection: [cpe-c, acc-c]
+  - name: [acc, core1]
+    connection: [acc-c, core-c1]
+  - name: [internet, border]
+    connection: [internet, border]
+  - name: [border, core1]
+    connection: [border, core-i1]
+  - name: [border, core2]
+    connection: [border, core-i2]
+  - name: [border, core3]
+    connection: [border, core-i3]
+  - name: [wan]
+    connection: [core-a1, core-a2, core-a3, core-b1, core-b2, core-c1, core-i1, core-i2, core-i3]
