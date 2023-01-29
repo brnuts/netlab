@@ -47,6 +47,7 @@ Done!
 https://www.dropbox.com/s/h6mfz20ocu6i4g3/netlab.vdi.bz2?dl=0
 
 ### Add port forwarding to 22 to access SSH
+Go to Virtualbox settings for the VM and configure NAT network with port forwarding 22, so you can access the network emulation via SSH.
 
 ### Username and password
 - all devices including the host has the username: `netlab` and password: `netlab`.
