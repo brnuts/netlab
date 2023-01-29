@@ -1,0 +1,9 @@
+[Unit]
+Description=Update /etc/hosts with docker names
+
+[Service]
+ExecStart=/etc/systemd/system/update-hosts.sh
+
+[Install]
+WantedBy=multi-user.target
+
