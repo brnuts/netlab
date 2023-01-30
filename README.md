@@ -7,6 +7,10 @@ This is a network lab that emulates several routers
 ## Doing yourself
 - Install any Linux distribution
 - Install docker (https://docs.docker.com/engine/install/)
+- Install lldpd
+```
+apt install lldpd
+```
 - Create user `netlab` locally:
 ```
 useradd netlab
