@@ -46,9 +46,11 @@ systemctl start update-hosts`
 
 Done!
 
-## Using VirtualBox
-### Download
+## Using pre-build image on VirtualBox
+### Download image at
+```
 https://www.dropbox.com/s/h6mfz20ocu6i4g3/netlab.vdi.bz2?dl=0
+```
 
 ### Add port forwarding to 22 to access SSH
 Go to Virtualbox settings for the VM and configure NAT network with port forwarding 22, so you can access the network emulation via SSH.
@@ -58,10 +60,11 @@ Go to Virtualbox settings for the VM and configure NAT network with port forward
 
 - `sudo` is configured to be used by username `netlab` without password.
 
-## Using Qemu
-### Download
+## Using pre-build image on Qemu
+### Download image at
+```
 https://www.dropbox.com/s/yki02bv3f09mmlh/netlab.img.bz2?dl=0
-
+```
 ### Before running it
 #### Add IP to the loopback
 * On Mac you will need to add a loopback interface alias to 10.0.4.1 before running
