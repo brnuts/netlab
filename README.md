@@ -1,8 +1,7 @@
 # Welcome to network lab
-This is a network lab that emulates several routers
+This page describe how to launch a host and start routers for the network lab.
 
-
-# How to install
+# How to launch the host
 
 ## Doing yourself
 - Install any Linux distribution
@@ -23,11 +22,19 @@ sudo usermod -aG docker netlab
 ```
 cp scripts/* /home/netlab
 ```
-- Install `yq`:
+- Install python3:
 ```
-apt install yq
+apt install python3
 ```
-- copy update-hosts scripts to `/etc/systemd/system`:
+- Install pip:
+```
+apt install pip
+```
+- Install docker for Python:
+```
+apt install docker
+```
+- configure update-hosts.service by copying update-hosts scripts to `/etc/systemd/system`:
 ```
 cp update-hosts.* /etc/systemd/system/
 ```
