@@ -1,12 +1,60 @@
 # Welcome to network lab
-This is a network lab that emulates several routers
+This page describe how to launch a host and start routers for the network lab.
 
+# How to launch the host
 
-# How to install
+## Using pre-build image on VirtualBox
+### Download image at
+```
+https://www.dropbox.com/s/h6mfz20ocu6i4g3/netlab.vdi.bz2?dl=0
+```
+
+### Add port forwarding to 22 to access SSH
+Go to Virtualbox settings for the VM and configure NAT network with port forwarding 22, so you can access the network emulation via SSH.
+
+### Username and password
+- all devices including the host has the username: `netlab` and password: `netlab`.
+
+- `sudo` is configured to be used by username `netlab` without password.
+
+## Using pre-build image on Qemu
+### Download image at
+```
+https://www.dropbox.com/s/yki02bv3f09mmlh/netlab.img.bz2?dl=0
+```
+### Before running it
+#### Add IP to the loopback
+* On Mac you will need to add a loopback interface alias to 10.0.4.1 before running
+```
+sudo ifconfig lo0 alias 10.0.4.1
+```
+* On Linux you will need to use the following command
+```
+sudo ip addr add 10.0.4.1 dev lo
+```
+
+### Running it
+
+#### For MAC hosts
+##### startup
+You will need some CPU parameter to run faster on MAC, like CPUID on and Accel HVF. MacOS may give low priority to `qemu` program as it is running from a terminal, to give more priority use `nice -20` in front.
+```
+sudo nice -20 qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -cpu host,vmware-cpuid-freq=on -accel hvf -net user,hostfwd=tcp:10.0.4.1:22-:22 -net nic
+```
+
+#### For Linux hosts
+##### Normal basic startup
+```
+sudo qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -net user,hostfwd=tcp:10.0.4.1:22-:22 -net nic
+```
 
 ## Doing yourself
 - Install any Linux distribution
 - Install docker (https://docs.docker.com/engine/install/)
+- Install lldpd
+```
+apt install lldpd
+```
 - Create user `netlab` locally:
 ```
 useradd netlab
@@ -19,11 +67,19 @@ sudo usermod -aG docker netlab
 ```
 cp scripts/* /home/netlab
 ```
-- Install `yq`:
+- Install python3:
 ```
-apt install yq
+apt install python3
 ```
-- copy update-hosts scripts to `/etc/systemd/system`:
+- Install pip:
+```
+apt install pip
+```
+- Install docker for Python:
+```
+apt install docker
+```
+- configure update-hosts.service by copying update-hosts scripts to `/etc/systemd/system`:
 ```
 cp update-hosts.* /etc/systemd/system/
 ```
@@ -42,47 +98,3 @@ systemctl start update-hosts`
 
 Done!
 
-## Using VirtualBox
-### Download
-https://www.dropbox.com/s/h6mfz20ocu6i4g3/netlab.vdi.bz2?dl=0
-
-### Add port forwarding to 22 to access SSH
-
-### Username and password
-- all devices including the host has the username: `netlab` and password: `netlab`.
-
-- `sudo` is configured to be used by username `netlab` without password.
-
-## Using Qemu
-### Download
-https://www.dropbox.com/s/yki02bv3f09mmlh/netlab.img.bz2?dl=0
-
-### Before running it
-#### Add IP to the loopback
-* On Mac you will need to add a loopback interface alias to 10.0.4.1 before running
-```
-sudo ifconfig lo0 alias 10.0.4.1
-```
-* On Linux you will need to use the following command
-```
-sudo ip addr add 10.0.4.1 dev lo
-```
-
-### Running it
-
-#### For MAC hosts
-##### Normal basic startup
-```
-sudo qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -net user,hostfwd=tcp:10.0.4.1:22-:22 -net nic
-```
-##### Advanced startup
-You will need some CPU parameter to run faster on MAC, like CPUID on and Accel HVF. MacOS may give low priority to `qemu` program as it is running from a terminal, to give more priority use `nice -20` in front.
-```
-sudo nice -20 qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -cpu host,vmware-cpuid-freq=on -accel hvf -net user,hostfwd=tcp:10.0.4.1:22-:22 -net nic
-```
-
-#### For Linux hosts
-##### Normal basic startup
-```
-sudo qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -net user,hostfwd=tcp:10.0.4.1:22-:22 -net nic
-```
