@@ -1,8 +1,8 @@
-package veth
+package main
 
 import "fmt"
 
-func AddPeer(peerA, peerB string) string {
+func vethAddPeer(peerA, peerB string) string {
 	return fmt.Sprintf(
 		"sudo ip link add %s type veth peer name %s",
 		peerA,
@@ -10,7 +10,8 @@ func AddPeer(peerA, peerB string) string {
 	)
 }
 
-func DelPeer(peerA, peerB string) string {
+// Function created for future use
+func vethDelPeer(peerA, peerB string) string {
 	return fmt.Sprintf(
 		"sudo ip link del %s type veth peer name %s",
 		peerA,
@@ -18,7 +19,7 @@ func DelPeer(peerA, peerB string) string {
 	)
 }
 
-func SetNameSpace(interfaceName string, nameSpace int) string {
+func vethSetNameSpace(interfaceName string, nameSpace int) string {
 	return fmt.Sprintf(
 		"sudo ip link set %s netns %d",
 		interfaceName,
@@ -26,7 +27,7 @@ func SetNameSpace(interfaceName string, nameSpace int) string {
 	)
 }
 
-func InterfaceUp(deviceName, interfaceName string) string {
+func vethInterfaceUp(deviceName, interfaceName string) string {
 	if deviceName == "host" {
 		return fmt.Sprintf("sudo ip link set %s up", interfaceName)
 	} else {
@@ -38,7 +39,8 @@ func InterfaceUp(deviceName, interfaceName string) string {
 	}
 }
 
-func InterfaceDel(deviceName, interfaceName string) string {
+// Function created for future use
+func vethInterfaceDel(deviceName, interfaceName string) string {
 	if deviceName == "host" {
 		return fmt.Sprintf("sudo ip link del %s up", interfaceName)
 	} else {

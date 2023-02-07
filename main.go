@@ -1,52 +1,34 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"strconv"
 	"strings"
 
-	"netlab/veth"
-
 	"github.com/melbahja/goph"
+	"golang.org/x/crypto/ssh"
 	"gopkg.in/yaml.v3"
 )
 
-type DeviceTopologyType struct {
-	Name  string
-	Type  string
-	Image string
-}
+var (
+	host         string
+	user         string
+	passwd       string
+	port         uint
+	topologyFile string
+)
 
-type LinkTopologyType struct {
-	Name       []string
-	Connection []string
-}
+func init() {
 
-type TopologyConfType struct {
-	Devices []DeviceTopologyType
-	Links   []LinkTopologyType
-}
+	flag.StringVar(&host, "host", "localhost", "Host IP for netlab")
+	flag.UintVar(&port, "port", 22, "SSH port to access Host IP for netlab")
+	flag.StringVar(&user, "user", "netlab", "Username to access netlab host")
+	flag.StringVar(&passwd, "pw", "netlab", "Password to access netlab host")
+	flag.StringVar(&topologyFile, "topo", "topology.yaml", "Topology yaml file")
 
-type DeviceToNSType map[string]int
-
-type VethEndType struct {
-	Device        string
-	NameSpace     int
-	InterfaceName string
-}
-
-type VethPeerType struct {
-	DeviceA VethEndType
-	DeviceB VethEndType
-}
-
-type ConfType struct {
-	Topology   TopologyConfType
-	DeviceToNS DeviceToNSType
-	Veths      []VethPeerType
-	Client     *goph.Client
 }
 
 func (conf *ConfType) readTopologyFile(fileName string) error {
@@ -62,15 +44,47 @@ func (conf *ConfType) readTopologyFile(fileName string) error {
 
 }
 
-func (conf *ConfType) connectToHost(host, user, passwd string) error {
+func (conf *ConfType) connectHost(host string, port uint, user string, pw string) error {
 
-	client, err := goph.New(user, host, goph.Password(passwd))
+	// Unfortunately we can't use goph.New() as the port is fixed
+	// To allow port input, we need to use goph.NewConn()
+	client, err := goph.NewConn(&goph.Config{
+		User:     user,
+		Addr:     host,
+		Port:     port,
+		Auth:     goph.Password(pw),
+		Callback: ssh.InsecureIgnoreHostKey(),
+	})
 	if err != nil {
 		return err
 	}
+
 	conf.Client = client
+
 	return nil
 
+}
+
+func runCommand(client *goph.Client, cmd string) error {
+	out, err := client.Run(cmd)
+	if err != nil {
+		trimOut := strings.TrimSuffix(string(out), "\n")
+		return fmt.Errorf(
+			"failed to run '%s', output: %s ,error: %v", cmd, trimOut, err,
+		)
+	}
+	return nil
+}
+
+func runCommandOut(client *goph.Client, cmd string) (string, error) {
+	out, err := client.Run(cmd)
+	if err != nil {
+		trimOut := strings.TrimSuffix(string(out), "\n")
+		return "", fmt.Errorf(
+			"failed to run '%s', output: %s ,error: %v", cmd, trimOut, err,
+		)
+	}
+	return string(out), nil
 }
 
 func appendVeth(conf *ConfType, link LinkTopologyType) error {
@@ -127,12 +141,15 @@ func (conf *ConfType) loadVeths() error {
 	conf.DeviceToNS = make(DeviceToNSType)
 
 	for _, device := range conf.Topology.Devices {
-		out, err := conf.Client.Run(
-			"docker inspect -f '{{.State.Pid}}' " + device.Name)
+		cmd := fmt.Sprintf(
+			"docker inspect -f '{{.State.Pid}}' %s",
+			device.Name,
+		)
+		out, err := runCommandOut(conf.Client, cmd)
 		if err != nil {
 			return err
 		}
-		trimOut := strings.TrimSuffix(string(out), "\n")
+		trimOut := strings.TrimSuffix(out, "\n")
 		ns, err := strconv.Atoi(trimOut)
 		if err != nil {
 			return err
@@ -162,44 +179,32 @@ func (conf *ConfType) loadVeths() error {
 	return nil
 }
 
-func runCommand(client *goph.Client, cmd string) error {
-	out, err := client.Run(cmd)
-	if err != nil {
-		trimOut := strings.TrimSuffix(string(out), "\n")
-		return fmt.Errorf(
-			"failed to run '%s', output: %s ,error: %v", cmd, trimOut, err,
-		)
-	}
-	//fmt.Println(cmd)
-	return nil
-}
-
 func createPeerVeth(conf *ConfType, v VethPeerType) error {
 	// Add veth peer
-	cmd := veth.AddPeer(v.DeviceA.InterfaceName, v.DeviceB.InterfaceName)
+	cmd := vethAddPeer(v.DeviceA.InterfaceName, v.DeviceB.InterfaceName)
 	if err := runCommand(conf.Client, cmd); err != nil {
 		return err
 	}
 	// Move interface to namespace on DeviceA
-	cmd = veth.SetNameSpace(v.DeviceA.InterfaceName, v.DeviceA.NameSpace)
+	cmd = vethSetNameSpace(v.DeviceA.InterfaceName, v.DeviceA.NameSpace)
 	if err := runCommand(conf.Client, cmd); err != nil {
 		return err
 	}
 	// If greater than 0, move to namespace on DeviceB
 	// Otherwise just ignore, as the default namespace is on host
-	if veth.DeviceB.NameSpace > 0 {
-		cmd = veth.SetNameSpace(v.DeviceB.InterfaceName, v.DeviceB.NameSpace)
+	if v.DeviceB.NameSpace > 0 {
+		cmd = vethSetNameSpace(v.DeviceB.InterfaceName, v.DeviceB.NameSpace)
 		if err := runCommand(conf.Client, cmd); err != nil {
 			return err
 		}
 	}
 	// Bringing Device A interfaces UP
-	cmd = veth.InterfaceUp(v.DeviceA.Device, v.DeviceA.InterfaceName)
+	cmd = vethInterfaceUp(v.DeviceA.Device, v.DeviceA.InterfaceName)
 	if err := runCommand(conf.Client, cmd); err != nil {
 		return err
 	}
 	// Bringing Device B interface UP
-	cmd = veth.InterfaceUp(v.DeviceB.Device, v.DeviceB.InterfaceName)
+	cmd = vethInterfaceUp(v.DeviceB.Device, v.DeviceB.InterfaceName)
 	if err := runCommand(conf.Client, cmd); err != nil {
 		return err
 	}
@@ -219,24 +224,31 @@ func (conf *ConfType) createVeths() error {
 
 func main() {
 
+	flag.Parse()
+
 	var conf = new(ConfType)
 
-	if err := conf.readTopologyFile("topology.yaml"); err != nil {
+	log.Printf("reading %s file", topologyFile)
+	if err := conf.readTopologyFile(topologyFile); err != nil {
 		log.Fatalf("read topology failed: %v", err)
 	}
-	//fmt.Println(conf.Topology)
 
-	if err := conf.connectToHost("localhost", "netlab", "netlab"); err != nil {
-		log.Fatalf("failed connect to host: %v", err)
+	log.Printf("connecting via SSH to %s@%s", user, host)
+	if err := conf.connectHost(host, port, user, passwd); err != nil {
+		log.Fatalf("failed to connect to host: %v", err)
 	}
 	defer conf.Client.Close()
 
+	log.Printf("loading veth information")
 	if err := conf.loadVeths(); err != nil {
 		log.Fatalf("failed to load veths: %v", err)
 	}
 
+	log.Printf("connecting devices with %d veths", len(conf.Veths))
 	if err := conf.createVeths(); err != nil {
 		log.Fatalf("failed to create veths: %v", err)
 	}
+
+	log.Printf("%d veths created successfuly", len(conf.Veths))
 
 }
