@@ -1,0 +1,97 @@
+devices:
+  - name: acc-a
+    type: router_acc
+    image: brnuts/routerlab
+  - name: acc-b
+    type: router_acc
+    image: brnuts/routerlab
+  - name: acc-c
+    type: router_acc
+    image: brnuts/routerlab
+  - name: border
+    type: router_border
+    image: brnuts/routerlab
+  - name: core-a1
+    type: router_core
+    image: brnuts/routerlab
+  - name: core-a2
+    type: router_core
+    image: brnuts/routerlab
+  - name: core-a3
+    type: router_core
+    image: brnuts/routerlab
+  - name: core-b1
+    type: router_core
+    image: brnuts/routerlab
+  - name: core-b2
+    type: router_core
+    image: brnuts/routerlab
+  - name: core-c1
+    type: router_core
+    image: brnuts/routerlab
+  - name: core-i1
+    type: router_core
+    image: brnuts/routerlab
+  - name: core-i2
+    type: router_core
+    image: brnuts/routerlab
+  - name: core-i3
+    type: router_core
+    image: brnuts/routerlab
+  - name: cpe-a
+    type: router_cpe
+    image: brnuts/routerlab
+  - name: cpe-b
+    type: router_cpe
+    image: brnuts/routerlab
+  - name: cpe-c
+    type: router_cpe
+    image: brnuts/routerlab
+  - name: internet
+    type: internet
+    image: brnuts/internetlab
+  - name: pc-a
+    type: pc
+    image: brnuts/pclab
+  - name: pc-b
+    type: pc
+    image: brnuts/pclab
+  - name: pc-c
+    type: pc
+    image: brnuts/pclab
+
+links:
+  - name: [pc, cpe]
+    connection: [pc-a, cpe-a]
+  - name: [cpe, acc]
+    connection: [cpe-a, acc-a]
+  - name: [acc, core1]
+    connection: [acc-a, core-a1]
+  - name: [acc, core2]
+    connection: [acc-a, core-a2]
+  - name: [acc, core3]
+    connection: [acc-a, core-a3]
+  - name: [pc, cpe]
+    connection: [pc-b, cpe-b]
+  - name: [cpe, acc]
+    connection: [cpe-b, acc-b]
+  - name: [acc, core1]
+    connection: [acc-b, core-b1]
+  - name: [acc, core2]
+    connection: [acc-b, core-b2]
+  - name: [pc, cpe]
+    connection: [pc-c, cpe-c]
+  - name: [cpe, acc]
+    connection: [cpe-c, acc-c]
+  - name: [acc, core1]
+    connection: [acc-c, core-c1]
+  - name: [internet, border]
+    connection: [internet, border]
+  - name: [border, core1]
+    connection: [border, core-i1]
+  - name: [border, core2]
+    connection: [border, core-i2]
+  - name: [border, core3]
+    connection: [border, core-i3]
+  - name: [wan]
+    connection: [core-a1, core-a2, core-a3, core-b1, core-b2, core-c1, core-i1, core-i2, core-i3]
