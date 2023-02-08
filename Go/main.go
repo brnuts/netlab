@@ -222,6 +222,33 @@ func (conf *ConfType) createVeths() error {
 	return nil
 }
 
+func (conf *ConfType) addVethsToBackbone() error {
+	// create bridge name backbone
+
+	cmd := "sudo ip link add name backbone type bridge"
+	if err := runCommand(conf.Client, cmd); err != nil {
+		return err
+	}
+	cmd = "sudo ip link set backbone up"
+	if err := runCommand(conf.Client, cmd); err != nil {
+		return err
+	}
+	for _, veth := range conf.Veths {
+		if veth.DeviceB.NameSpace == 0 {
+			cmd := fmt.Sprintf(
+				"sudo ip link set %s master backbone",
+				veth.DeviceB.InterfaceName,
+			)
+			if err := runCommand(conf.Client, cmd); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+
+}
+
 func main() {
 
 	flag.Parse()
@@ -249,6 +276,10 @@ func main() {
 		log.Fatalf("failed to create veths: %v", err)
 	}
 
-	log.Printf("%d veths created successfuly", len(conf.Veths))
+	log.Printf("creating bridge and adding veth backbones")
+	if err := conf.addVethsToBackbone(); err != nil {
+		log.Fatalf("failed to add veths to backbone: %v", err)
+	}
 
+	log.Print("all done successfully")
 }
