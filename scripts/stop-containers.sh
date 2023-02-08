@@ -9,3 +9,5 @@ do
   docker stop $x
   docker rm $x
 done
+
+sudo ip link del backbone
