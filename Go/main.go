@@ -3,14 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"strconv"
 	"strings"
-
-	"github.com/melbahja/goph"
-	"golang.org/x/crypto/ssh"
-	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -29,62 +24,6 @@ func init() {
 	flag.StringVar(&passwd, "pw", "netlab", "Password to access netlab host")
 	flag.StringVar(&topologyFile, "topo", "topology.yaml", "Topology yaml file")
 
-}
-
-func (conf *ConfType) readTopologyFile(fileName string) error {
-	yfile, err := ioutil.ReadFile(fileName)
-	if err != nil {
-		return err
-	}
-	if err = yaml.Unmarshal(yfile, &conf.Topology); err != nil {
-		return err
-	}
-
-	return nil
-
-}
-
-func (conf *ConfType) connectHost(host string, port uint, user string, pw string) error {
-
-	// Unfortunately we can't use goph.New() as the port is fixed
-	// To allow port input, we need to use goph.NewConn()
-	client, err := goph.NewConn(&goph.Config{
-		User:     user,
-		Addr:     host,
-		Port:     port,
-		Auth:     goph.Password(pw),
-		Callback: ssh.InsecureIgnoreHostKey(),
-	})
-	if err != nil {
-		return err
-	}
-
-	conf.Client = client
-
-	return nil
-
-}
-
-func runCommand(client *goph.Client, cmd string) error {
-	out, err := client.Run(cmd)
-	if err != nil {
-		trimOut := strings.TrimSuffix(string(out), "\n")
-		return fmt.Errorf(
-			"failed to run '%s', output: %s ,error: %v", cmd, trimOut, err,
-		)
-	}
-	return nil
-}
-
-func runCommandOut(client *goph.Client, cmd string) (string, error) {
-	out, err := client.Run(cmd)
-	if err != nil {
-		trimOut := strings.TrimSuffix(string(out), "\n")
-		return "", fmt.Errorf(
-			"failed to run '%s', output: %s ,error: %v", cmd, trimOut, err,
-		)
-	}
-	return string(out), nil
 }
 
 func appendVeth(conf *ConfType, link LinkTopologyType) error {
