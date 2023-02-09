@@ -5,7 +5,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func (conf *ConfType) connectHost(host string, port uint, user string, pw string) error {
+func (conf *ConfType) connectToHost(host string, port uint, user string, pw string) error {
 
 	// Unfortunately we can't use goph.New() as the port is fixed
 	// To allow port input, we need to use goph.NewConn()
