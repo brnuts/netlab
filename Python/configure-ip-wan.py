@@ -1,7 +1,15 @@
+import ipaddress
 import json
+import logging
 from argparse import ArgumentParser
 
 import paramiko
+import yaml
+
+logging.basicConfig(format="%(funcName)s(): %(message)s")
+logging.getLogger("paramiko").setLevel(logging.WARNING)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 class NetLab:
@@ -38,26 +46,50 @@ class NetLab:
         self.bastion.close()
 
 
-def get_neighbours(args):
+def run_device_command(args, device, command):
     netlab = NetLab()
     netlab.connectBastion(addr=args.bastion, user=args.b_user, passwd=args.b_passwd)
-    device = netlab.connectDevice(args.device, user=args.r_user, passwd=args.r_passwd)
-    stdin, stdout, stderr = device.exec_command("sudo lldpctl -f json")
-    data = json.loads(stdout.read().decode("ascii"))
+    logger.info("running cmd '{}' on device '{}'".format(command, device))
+    device = netlab.connectDevice(device, user=args.r_user, passwd=args.r_passwd)
+    stdin, stdout, stderr = device.exec_command(command)
+    return stdout
 
-    interfaces = []
-    for item in data["lldp"]["interface"]:
-        key = list(item.keys())[0]
-        values = list(item.values())[0]
-        neighbour = list(values["chassis"].keys())[0]
-        interfaces.append({"Interface": key, "Device": neighbour})
 
-    netlab.close()
-    return interfaces
+def read_topology_file(file_name):
+    with open(file_name) as file:
+        data = yaml.safe_load(file)
+
+    return data
+
+
+def get_wan_interfaces(topology):
+    wan_link = [x for x in topology["links"] if x["name"][0] == "wan"]
+    wan_devices = wan_link[0]["connection"]
+    wan_interfaces = {}
+    for device in wan_devices:
+        wan_interfaces[device] = device + "-" + "wan"
+    return wan_interfaces
+
+
+def configure_wan_interfaces(args, wan_interfaces):
+    network = ipaddress.ip_network(args.subnet)
+    valid_ips = list(network.hosts())
+    prefix = network.prefixlen
+    for device, interface in wan_interfaces.items():
+        ip = valid_ips.pop(0)
+        cmd = "sudo ip addr add {}/{} dev {}".format(ip, prefix, interface)
+        run_device_command(args, device, cmd)
 
 
 def parse_arguments():
     parser = ArgumentParser()
+    parser.add_argument(
+        "-t",
+        "--topo",
+        dest="topology",
+        default="topology.yaml",
+        help="Topology description yaml file",
+    )
     parser.add_argument(
         "-b",
         "--bastion",
@@ -80,13 +112,6 @@ def parse_arguments():
         help="Password for the bastion access",
     )
     parser.add_argument(
-        "-t",
-        "--targetdevice",
-        dest="device",
-        required=True,
-        help="Target device to find interface neighbours",
-    )
-    parser.add_argument(
         "-r",
         "--ruser",
         dest="r_user",
@@ -100,6 +125,13 @@ def parse_arguments():
         default="netlab",
         help="Password for the device access",
     )
+    parser.add_argument(
+        "-i",
+        "--ipsubnet",
+        dest="subnet",
+        default="10.200.200.0/24",
+        help="IP subnet to be used in the WAN interfaces",
+    )
 
     return parser.parse_args()
 
@@ -107,7 +139,12 @@ def parse_arguments():
 def main():
     args = parse_arguments()
 
-    print(json.dumps(get_neighbours(args), indent=4))
+    logger.info("reading topology file")
+    topology = read_topology_file(args.topology)
+    logger.info("getting wan interfaces")
+    wan_interfaces = get_wan_interfaces(topology)
+    logger.info("configuring inteface wan devices with {} subnet".format(args.subnet))
+    configure_wan_interfaces(args, wan_interfaces)
 
 
 if __name__ == "__main__":
