@@ -35,7 +35,7 @@ func main() {
 	}
 
 	log.Printf("connecting via SSH to %s@%s", user, host)
-	if err := conf.connectHost(host, port, user, passwd); err != nil {
+	if err := conf.connectToHost(host, port, user, passwd); err != nil {
 		log.Fatalf("failed to connect to host: %v", err)
 	}
 	defer conf.Client.Close()
