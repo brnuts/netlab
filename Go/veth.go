@@ -210,6 +210,11 @@ func (conf *ConfType) addVethsToBackbone() error {
 	if err := runCommand(conf.Client, cmd); err != nil {
 		return err
 	}
+	// make sure iptables don't block traffic on the bridge
+	cmd = "sudo iptables -A FORWARD -j ACCEPT"
+	if err := runCommand(conf.Client, cmd); err != nil {
+		return err
+	}
 	for _, veth := range conf.Veths {
 		if veth.DeviceB.NameSpace == 0 {
 			cmd := fmt.Sprintf(

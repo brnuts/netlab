@@ -52,6 +52,8 @@ def run_device_command(args, device, command):
     logger.info("running cmd '{}' on device '{}'".format(command, device))
     device = netlab.connectDevice(device, user=args.r_user, passwd=args.r_passwd)
     stdin, stdout, stderr = device.exec_command(command)
+    netlab.close()
+
     return stdout
 
 
@@ -68,6 +70,7 @@ def get_wan_interfaces(topology):
     wan_interfaces = {}
     for device in wan_devices:
         wan_interfaces[device] = device + "-" + "wan"
+    
     return wan_interfaces
 
 
