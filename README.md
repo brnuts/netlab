@@ -6,7 +6,7 @@ This page describe how to launch a host and start routers for the network lab.
 ## Using pre-build image on VirtualBox
 ### Download image at
 ```
-https://www.dropbox.com/s/h6mfz20ocu6i4g3/netlab.vdi.bz2?dl=0
+https://www.dropbox.com/s/2l788jzbpe02rnt/netlab.vdi.bz3?dl=0
 ```
 ### Create new VM on Virtualbox and use the image downloaded as the disk
 ### Add port forwarding to 22 to access SSH
@@ -20,7 +20,7 @@ Go to Virtualbox settings for the VM and configure NAT network with port forward
 ## Using pre-build image on Qemu
 ### Download image at
 ```
-https://www.dropbox.com/s/yki02bv3f09mmlh/netlab.img.bz2?dl=0
+https://www.dropbox.com/s/ajt90d4vfvkeb95/netlab.img.bz3?dl=0
 ```
 ### Before running it
 #### Add IP to the loopback
