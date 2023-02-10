@@ -3,24 +3,36 @@ This page describe how to launch a host and start routers for the network lab.
 
 # How to launch the host
 
+
 ## Using pre-build image on VirtualBox
-### Download image at
+- Download image at
 ```
-https://www.dropbox.com/s/h6mfz20ocu6i4g3/netlab.vdi.bz2?dl=0
+https://www.dropbox.com/s/2l788jzbpe02rnt/netlab.vdi.bz3?dl=0
 ```
-### Create new VM on Virtualbox and use the image downloaded as the disk
-### Add port forwarding to 22 to access SSH
-Go to Virtualbox settings for the VM and configure NAT network with port forwarding 22, so you can access the network emulation via SSH.
+* Uncompress `netlab.vdi.bz3`
+* Create new VM on VirtualBox using the pre-built image as the hard disk `netlab.vdi`
+* Add port forwarding to 22 to access SSH by going to Virtualbox settings for the VM and configure NAT network with port forwarding 22, so you can access the network emulation via SSH. With that you can access the network lab by doing `ssh netlab@localhost`
 
-### Username and password
-- all devices including the host has the username: `netlab` and password: `netlab`.
+<img src="https://github.com/brnuts/netlab/blob/main/Port-foward-example-Virtualbox.png" width="300"/>
 
-- `sudo` is configured to be used by username `netlab` without password.
+* All devices including the host have the username `netlab` with password `netlab`.
+* `sudo` is configured to be used by username `netlab` without password.
+* Access to `vtysh` on the routers via username `vtysh` with password `vtysh`.
+
+* (Optional) Install Guest Additions on the Linux VM, use these steps:
+   * Open VirtualBox.
+   * Right-click the virtual machine, select the Start submenu and choose the Normal Start option.
+   * Sign in to netlab (username: `netlab` password: `netlab`)
+   * Click the Devices menu and select the Insert Guest Additions CD image option.
+   * On Linux do `sudo mount /dev/cdrom`
+   * Run the command `sudo sh /dev/cdrom0/VBoxLinuxAdditions.run`
+   * Reboot your VM
+
 
 ## Using pre-build image on Qemu
 ### Download image at
 ```
-https://www.dropbox.com/s/yki02bv3f09mmlh/netlab.img.bz2?dl=0
+https://www.dropbox.com/s/ajt90d4vfvkeb95/netlab.img.bz3?dl=0
 ```
 ### Before running it
 #### Add IP to the loopback
@@ -55,7 +67,7 @@ sudo qemu-system-x86_64 -hda netlab.img -smp 4 -m 2G -net user,hostfwd=tcp:10.0.
 ```
 apt install lldpd
 ```
-- Create user `netlab` locally:
+- Create user `netlab` locally, suggest using netlab as password:
 ```
 useradd netlab
 ```
@@ -74,10 +86,6 @@ apt install python3
 - Install pip:
 ```
 apt install pip
-```
-- Install docker for Python:
-```
-apt install docker
 ```
 - configure update-hosts.service by copying update-hosts scripts to `/etc/systemd/system`:
 ```
